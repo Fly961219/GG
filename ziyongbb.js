@@ -2,7 +2,7 @@
 # 自用插件
 ^https?:\/\/app\.bilibili\.com\/x\/v2\/(account\/(myinfo|mine)|feed\/index)\? url script-request-header https://raw.githubusercontent.com/Fly961219/GG/refs/heads/main/ziyongbb.js
 ^https?:\/\/app\.bilibili\.com\/bilibili\.app\.playerunite\.v1\.Player\/PlayViewUnite url script-request-header https://raw.githubusercontent.com/Fly961219/GG/refs/heads/main/ziyongbb.js
-
+^https?:\/\/api\.bilibili\.com\/x\/vip\/ads\/material\/report?.* url script-request-header https://raw.githubusercontent.com/Fly961219/GG/refs/heads/main/ziyongbb.js
 [mitm]
 hostname = *.bilibili.*, *.biliapi.*, 111.31.33.*, 111.6.167.*, app.bilibili.com, api.bilibili.com, api.live.bilibili.com, grpc.biliapi.net
 
