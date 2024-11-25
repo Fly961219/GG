@@ -1,5 +1,5 @@
 [rewrite_local]
-# > 哔哩哔哩 大会员 画质解锁🔓
+# > 自用插件
 ^https?:\/\/app.bilibili.com\/x\/v2\/(account\/(myinfo|mine)|(feed\/index))\? url script-response-body https://raw.githubusercontent.com/Fly961219/GG/refs/heads/main/ziyongbb.js
 ^https?:\/\/app.bilibili.com\/bilibili.app.playerunite.v1.Player\/PlayViewUnite url script-request-header https://raw.githubusercontent.com/Fly961219/GG/refs/heads/main/ziyongbb.js
 
