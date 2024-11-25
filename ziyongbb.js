@@ -13,7 +13,7 @@ hostname = *.bilibili.*, *.biliapi.*, 111.31.33.*, 111.6.167.*, app.bilibili.com
 
 var headers = $request['headers'];
 delete headers["Authorization"];
-delete headers["Cookie"];
+
 // 
 headers['buvid'] = $persistentStore.read("Y647126AFE7823304A3B83A0A07A9DE9BF28");
 headers['authorization'] = $persistentStore.read("Bilibili_Authorization");
