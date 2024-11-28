@@ -6,7 +6,7 @@
 
 
 [mitm]
-hostname = msg.qy。net， 
+hostname = msg.qy.net
 
 *
 
