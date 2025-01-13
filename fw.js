@@ -2,6 +2,8 @@
 ^http://8\.210\.246\.163:10010/emby/Users/b8476671779d45b5852c39754a0c3b76/Items/Resume?.* url script-request-header https://raw.githubusercontent.com/Fly961219/GG/refs/heads/main/fw.js
 ^http://141\.11\.175\.105:10010/emby/Users/AuthenticateByName url script-request-body https://raw.githubusercontent.com/Fly961219/GG/refs/heads/main/fw.js
 
+[hostname]
+141.11.175.105， 8.210.246.163
 
 // 获取请求头
 let headers = $request.headers;
