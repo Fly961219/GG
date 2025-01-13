@@ -8,9 +8,10 @@ hostname = 141.11.175.105, 8.210.246.163
 // 获取请求头
 let headers = $request.headers;
 
-// 修改 User-Agent，替换设备名称
+// 检查 User-Agent 是否存在
 if (headers['User-Agent']) {
-    headers['User-Agent'] = headers['User-Agent'].replace(/iPhone|Android|Mac OS X/, 'senplayer');
+    // 替换 Forward 为 SenPlayer
+    headers['User-Agent'] = headers['User-Agent'].replace(/Forward/, 'SenPlayer');
 }
 
 // 返回修改后的请求
