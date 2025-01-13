@@ -6,12 +6,14 @@
 hostname = 141.11.175.105, 8.210.246.163
 
 // 获取请求头
+// 获取请求头
 let headers = $request.headers;
 
-// 检查 User-Agent 是否存在
-if (headers['User-Agent']) {
-    // 替换 Forward 为 SenPlayer
-    headers['User-Agent'] = headers['User-Agent'].replace(/Forward/, 'SenPlayer');
+// 遍历请求头中的所有字段
+for (let key in headers) {
+    if (typeof headers[key] === 'string' && headers[key].includes('Forward')) {
+        headers[key] = headers[key].replace(/Forward/g, 'SenPlayer');
+    }
 }
 
 // 返回修改后的请求
