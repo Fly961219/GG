@@ -1,22 +1,28 @@
-proxies:
-  - {name: 🇭🇰 香港, server: 223.113.54.145, port: 36442, client-fingerprint: chrome, type: trojan, password: phXKwfrd, skip-cert-verify: true}
-  - {name: 🇭🇰 香港2, server: 36.150.215.196, port: 18681, client-fingerprint: chrome, type: trojan, password: phXKwfrd, skip-cert-verify: true}
-  - {name: 🇭🇰 香港3, server: 103.149.183.61, port: 8388, client-fingerprint: chrome, type: ss, cipher: chacha20-ietf, password: asd123456, tfo: false}
-  - {name: 🇭🇰 香港4, server: 183.236.51.23, port: 53002, client-fingerprint: chrome, type: vmess, uuid: 418048af-a293-4b99-9b0c-98ca3580dd24, alterId: 64, cipher: auto, tls: false, tfo: false, skip-cert-verify: false}
-  - {name: 🇭🇰 香港5, server: qh62onjn.slashdevslashnetslashtun.net, port: 15013, client-fingerprint: chrome, type: ss, cipher: aes-256-gcm, password: L1SLK5APNHD6Z7P0, tfo: false}
-  - {name: 🇭🇰 香港6, server: 120.198.71.219, port: 44614, client-fingerprint: chrome, type: vmess, uuid: 418048af-a293-4b99-9b0c-98ca3580dd24, alterId: 64, cipher: auto, tls: false, tfo: false, skip-cert-verify: false}
-  - {name: 🇭🇰 香港7, server: yoyo.cmyiphone.top, port: 49301, client-fingerprint: chrome, type: vmess, uuid: 061d42d5-4e6a-4661-be04-80dcfb15b08f, alterId: 0, cipher: auto, tls: false, tfo: false, skip-cert-verify: false}
-  - {name: 🇭🇰 香港8, server: 219.135.227.210, port: 15006, client-fingerprint: chrome, type: ss, cipher: aes-256-gcm, password: F2KVLB8XGXPPA7OX, tfo: false}
-  - {name: 🇯🇵 日本, server: qh62onjn.slashdevslashnetslashtun.net, port: 18009, client-fingerprint: chrome, type: ss, cipher: aes-256-gcm, password: 62TRHAZ070VS0QX3, tfo: false}
-  - {name: 🇯🇵 日本2, server: qh62onjn.slashdevslashnetslashtun.net, port: 18003, client-fingerprint: chrome, type: ss, cipher: aes-256-gcm, password: 9OAJ48AFCGC9UHFK, tfo: false}
-  - {name: 🇰🇷 韩国, server: p220.panda001.net, port: 28290, client-fingerprint: chrome, type: ss, cipher: aes-256-cfb, password: qwerREWQ@@, tfo: false}
-  - {name: 🇸🇬 新加坡, server: ctmm.gscloud.bond, port: 31620, client-fingerprint: chrome, type: ss, cipher: chacha20-ietf-poly1305, password: f16d3752-7bae-474e-87dc-f892df2caeaf, tfo: false}
-  - {name: 🇸🇬 新加坡2, server: sg.mjt000.com, port: 443, client-fingerprint: chrome, type: trojan, password: 61834c10-4218-4918-b836-9b852b7add70, sni: sg.mjt000.com, skip-cert-verify: false}
-  - {name: 🇸🇬 新加坡3, server: 219.135.227.210, port: 16002, client-fingerprint: chrome, type: ss, cipher: aes-256-gcm, password: BS6J1MEQANXXVHQL, tfo: false}
-  - {name: 🇸🇬 新加坡4, server: qh62onjn.slashdevslashnetslashtun.net, port: 16009, client-fingerprint: chrome, type: ss, cipher: aes-256-gcm, password: LQVGZB307SUYK23Y, tfo: false}
-  - {name: 🇺🇸 美国, server: qh62onjn.slashdevslashnetslashtun.net, port: 17007, client-fingerprint: chrome, type: ss, cipher: aes-256-gcm, password: 71GJL31AYF3CXZ2K, tfo: false}
-  - {name: 🇺🇸 美国2, server: w72tapyb.slashdevslashnetslashtun.net, port: 17002, client-fingerprint: chrome, type: ss, cipher: aes-256-gcm, password: U177NTV9CLY0D3SP, tfo: false}
-  - {name: 🇸🇬 狮城特殊, server: 43.207.4.194, port: 443, client-fingerprint: chrome, type: ss, cipher: aes-256-cfb, password: amazonskr05, tfo: false}
-  - {name: 🇰🇷 韩国特殊, server: 47.129.158.52, port: 443, client-fingerprint: chrome, type: ss, cipher: aes-256-cfb, password: amazonskr05, tfo: false}
-  - {name: 🇯🇵 日本特殊, server: 43.201.249.92, port: 443, client-fingerprint: chrome, type: ss, cipher: aes-256-cfb, password: amazonskr05, tfo: false}
-  - {name: 🇩🇪 德国, server: 64.225.109.206, port: 2082, client-fingerprint: chrome, type: vmess, uuid: 48264b45-64b8-4e9f-8a88-cef41f20c736, alterId: 0, cipher: auto, tls: false, tfo: false, skip-cert-verify: false}
+;shadowsocks=example.com:80, method=chacha20, password=pwd, obfs=http, obfs-host=bing.com, obfs-uri=/resource/file, fast-open=false, udp-relay=false, server_check_url=http://www.apple.com/generate_204, tag=ss-01
+vless://fe2e8df9-e5dc-4984-a028-9b68c6cfb006@pjck.34gpg.shop:443?encryption=none&security=tls&type=ws&host=pjck.34gpg.shop&path=%2Ffe2e8df9-e5dc-4984-a028-9b68c6cfb006#233boy-ws-pjck.34gpg.shop
+vless://b3f77e05-15c5-4c71-b5ae-0f410dfa4410@dahx.q4m5.shop:443?encryption=none&security=tls&type=ws&host=dahx.q4m5.shop&path=%2Fb3f77e05-15c5-4c71-b5ae-0f410dfa4410#233boy-ws-dahx.q4m5.shop
+vless://987cf14b-e66b-4041-9e4b-dd486478b8fb@joqt.0owap.xyz:443?encryption=none&security=tls&type=ws&host=joqt.0owap.xyz&path=%2F987cf14b-e66b-4041-9e4b-dd486478b8fb#233boy-ws-joqt.0owap.xyz
+vless://a3f71b0c-f661-4149-bfae-11a994823d9d@xqka.o9k3.shop:443?encryption=none&security=tls&type=ws&host=xqka.o9k3.shop&path=%2Fa3f71b0c-f661-4149-bfae-11a994823d9d#233boy-ws-xqka.o9k3.shop
+vless://987cf14b-e66b-4041-9e4b-dd486478b8fb@joqt.0owap.xyz:443?encryption=none&security=tls&type=ws&host=joqt.0owap.xyz&path=%2F987cf14b-e66b-4041-9e4b-dd486478b8fb#233boy-ws-joqt.0owap.xyz
+vless://81c2e1d7-a756-4bd2-9f64-7f405fae160d@n0h9.0owap.xyz:443?encryption=none&security=tls&type=ws&host=n0h9.0owap.xyz&path=%2F81c2e1d7-a756-4bd2-9f64-7f405fae160d#233boy-ws-n0h9.0owap.xyz
+vless://dc42e1c5-a07f-4170-ac68-c07b615edf75@lrou.o9k3.shop:443?encryption=none&security=tls&type=ws&host=lrou.o9k3.shop&path=%2Fdc42e1c5-a07f-4170-ac68-c07b615edf75#233boy-ws-lrou.o9k3.shop
+vless://36b6a7a8-9715-4d89-bcdd-e71311d50d0e@ja0w.2t9t.cyou:443?encryption=none&security=tls&type=ws&host=ja0w.2t9t.cyou&path=%2F36b6a7a8-9715-4d89-bcdd-e71311d50d0e#233boy-ws-ja0w.2t9t.cyou
+vless://fe2e8df9-e5dc-4984-a028-9b68c6cfb006@pjck.34gpg.shop:443?encryption=none&security=tls&type=ws&host=pjck.34gpg.shop&path=%2Ffe2e8df9-e5dc-4984-a028-9b68c6cfb006#233boy-ws-pjck.34gpg.shop
+vless://f3af34a8-180a-447e-9502-0b6dae9b72cb@d115.o9k3.shop:443?encryption=none&security=tls&type=ws&host=d115.o9k3.shop&path=%2Ff3af34a8-180a-447e-9502-0b6dae9b72cb#233boy-ws-d115.o9k3.shop
+vless://fe2e8df9-e5dc-4984-a028-9b68c6cfb006@pjck.34gpg.shop:443?encryption=none&security=tls&type=ws&host=pjck.34gpg.shop&path=%2Ffe2e8df9-e5dc-4984-a028-9b68c6cfb006#233boy-ws-pjck.34gpg.shop
+vless://81c2e1d7-a756-4bd2-9f64-7f405fae160d@n0h9.0owap.xyz:443?encryption=none&security=tls&type=ws&host=n0h9.0owap.xyz&path=%2F81c2e1d7-a756-4bd2-9f64-7f405fae160d#233boy-ws-n0h9.0owap.xyz
+vless://fe2e8df9-e5dc-4984-a028-9b68c6cfb006@pjck.34gpg.shop:443?encryption=none&security=tls&type=ws&host=pjck.34gpg.shop&path=%2Ffe2e8df9-e5dc-4984-a028-9b68c6cfb006#233boy-ws-pjck.34gpg.shop
+vless://36b6a7a8-9715-4d89-bcdd-e71311d50d0e@ja0w.2t9t.cyou:443?encryption=none&security=tls&type=ws&host=ja0w.2t9t.cyou&path=%2F36b6a7a8-9715-4d89-bcdd-e71311d50d0e#233boy-ws-ja0w.2t9t.cyou
+vless://a35474d3-9f25-4f9d-a286-74337bf55e78@pbiv.34gpg.shop:443?encryption=none&security=tls&type=ws&host=pbiv.34gpg.shop&path=%2Fa35474d3-9f25-4f9d-a286-74337bf55e78#233boy-ws-pbiv.34gpg.sho
+vless://75982a48-2eda-493c-8b3f-abdc3443f31b@z39k.q4m5.shop:443?encryption=none&security=tls&type=ws&host=z39k.q4m5.shop&path=%2F75982a48-2eda-493c-8b3f-abdc3443f31b#233boy-ws-z39k.q4m5.shop
+vless://cb690b83-36d4-49db-a949-4db58f2d72a9@d7pl.34gpg.shop:443?encryption=none&security=tls&type=ws&host=d7pl.34gpg.shop&path=%2Fcb690b83-36d4-49db-a949-4db58f2d72a9#233boy-ws-d7pl.34gpg.shop
+vless://36b6a7a8-9715-4d89-bcdd-e71311d50d0e@ja0w.2t9t.cyou:443?encryption=none&security=tls&type=ws&host=ja0w.2t9t.cyou&path=%2F36b6a7a8-9715-4d89-bcdd-e71311d50d0e#233boy-ws-ja0w.2t9t.cyou
+vless://dc42e1c5-a07f-4170-ac68-c07b615edf75@lrou.o9k3.shop:443?encryption=none&security=tls&type=ws&host=lrou.o9k3.shop&path=%2Fdc42e1c5-a07f-4170-ac68-c07b615edf75#233boy-ws-lrou.o9k3.shop
+vless://dc42e1c5-a07f-4170-ac68-c07b615edf75@lrou.o9k3.shop:443?encryption=none&security=tls&type=ws&host=lrou.o9k3.shop&path=%2Fdc42e1c5-a07f-4170-ac68-c07b615edf75#233boy-ws-lrou.o9k3.shop
+vless://cb690b83-36d4-49db-a949-4db58f2d72a9@d7pl.34gpg.shop:443?encryption=none&security=tls&type=ws&host=d7pl.34gpg.shop&path=%2Fcb690b83-36d4-49db-a949-4db58f2d72a9#233boy-ws-d7pl.34gpg.shop
+vless://a35474d3-9f25-4f9d-a286-74337bf55e78@pbiv.34gpg.shop:443?encryption=none&security=tls&type=ws&host=pbiv.34gpg.shop&path=%2Fa35474d3-9f25-4f9d-a286-74337bf55e78#233boy-ws-pbiv.34gpg.sho
+vless://a35474d3-9f25-4f9d-a286-74337bf55e78@pbiv.34gpg.shop:443?encryption=none&security=tls&type=ws&host=pbiv.34gpg.shop&path=%2Fa35474d3-9f25-4f9d-a286-74337bf55e78#233boy-ws-pbiv.34gpg.sho
+vless://deeab5db-39e8-4f3d-9716-919b2f6a4f7a@rz5d.q4m5.shop:443?encryption=none&security=tls&type=ws&host=rz5d.q4m5.shop&path=%2Fdeeab5db-39e8-4f3d-9716-919b2f6a4f7a#233boy-ws-rz5d.q4m5.shop
+vless://cb690b83-36d4-49db-a949-4db58f2d72a9@d7pl.34gpg.shop:443?encryption=none&security=tls&type=ws&host=d7pl.34gpg.shop&path=%2Fcb690b83-36d4-49db-a949-4db58f2d72a9#233boy-ws-d7pl.34gpg.shop
+vless://81c2e1d7-a756-4bd2-9f64-7f405fae160d@n0h9.0owap.xyz:443?encryption=none&security=tls&type=ws&host=n0h9.0owap.xyz&path=%2F81c2e1d7-a756-4bd2-9f64-7f405fae160d#233boy-ws-n0h9.0owap.xyz
+vless://deeab5db-39e8-4f3d-9716-919b2f6a4f7a@rz5d.q4m5.shop:443?encryption=none&security=tls&type=ws&host=rz5d.q4m5.shop&path=%2Fdeeab5db-39e8-4f3d-9716-919b2f6a4f7a#233boy-ws-rz5d.q4m5.shop
