@@ -1,39 +1,53 @@
-// Loon 脚本：自动跳过广告并秒过奖励
-// 适用于广告域名 ad.zijieapi.com 和奖励域名 2024.youzizizi.lat
+/*
+📌 Loon 脚本：去广告 & 秒过广告奖励
+📌 作用：
+  1. 屏蔽广告 API，返回空数据
+  2. 拦截广告奖励 API，直接返回成功领取的 JSON
+📌 适用于：
+  - 广告请求：ad.zijieapi.com
+  - 领取奖励：2024.youzizizi.lat/api/v1/client/subscribe
+📌 作者：你的GitHub用户名
+📌 更新时间：2025-02-06
+*/
 
 const url = $request.url;
 
-// 屏蔽广告域名列表
-const blockList = [
-    "ad.zijieapi.com"
-];
+if (url.includes("ad.zijieapi.com")) {
+    // 处理广告拦截
+    console.log(`[去广告] 拦截广告请求：${url}`);
 
-// 直接完成奖励域名列表
-const rewardList = [
-    "2024.youzizizi.lat"
-];
-
-// 如果匹配到广告域名，直接返回空白内容
-if (blockList.some(domain => url.includes(domain))) {
-    console.log(`[拦截广告] ${url}`);
-    $done({ response: { status: 204, body: "" } });
-}
-
-// 如果匹配到奖励域名，模拟奖励已领取
-if (rewardList.some(domain => url.includes(domain))) {
-    console.log(`[秒过奖励] ${url}`);
     $done({
         response: {
             status: 200,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                success: true,
-                message: "奖励已领取",
-                data: { reward: "completed" }
-            })
+            headers: {
+                "Content-Type": "application/json",
+                "Cache-Control": "no-cache"
+            },
+            body: JSON.stringify({})
         }
     });
-}
+} else if (url.includes("youzizizi.lat/api/v1/client/subscribe")) {
+    // 处理秒过奖励
+    console.log(`[秒过奖励] 拦截请求：${url}`);
 
-// 如果不匹配任何规则，则正常放行
-$done({});
+    const responseBody = {
+        success: true,
+        message: "奖励已领取",
+        reward_id: "123456",
+        user_id: "987654",
+        extra: "success"
+    };
+
+    $done({
+        response: {
+            status: 200,
+            headers: {
+                "Content-Type": "application/json",
+                "Cache-Control": "no-cache"
+            },
+            body: JSON.stringify(responseBody)
+        }
+    });
+} else {
+    $done({});
+}
