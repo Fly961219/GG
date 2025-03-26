@@ -37,3 +37,15 @@ vless://53fa8faf-ba4b-4322-9c69-a3e5b1555049@156.238.18.234:80?encryption=none&s
 vless://53fa8faf-ba4b-4322-9c69-a3e5b1555049@154.83.2.156:8880?encryption=none&security=none&type=ws&host=redw.pooriam.ir&path=%2F#%F0%9F%87%AC%F0%9F%87%A7
 vless://53fa8faf-ba4b-4322-9c69-a3e5b1555049@156.238.18.153:2095?encryption=none&security=none&type=ws&host=redw.pooriam.ir&path=%2F#%F0%9F%87%BA%F0%9F%87%B2
 vless://53fa8faf-ba4b-4322-9c69-a3e5b1555049@156.238.18.28:2095?encryption=none&security=none&type=ws&host=redw.pooriam.ir&path=%2F#%F0%9F%87%A9%F0%9F%87%AA
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVANDMuMjA3LjE1Ny4yNTM6NDQz#HK, New Territories
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVANTIuMjcuMTI4LjIyMDo0NDM=#US, Dallas 2
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVAMzUuOTQuMTI0LjIzMDo0NDM=#HK, Los Angeles
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVAMTMuMTI1LjIzMS4xNzA6NDQz#TW, Taipei
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVANTQuMTk5LjY0LjE1Njo0NDM=#JP, Osaka
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVAMy4wLjE4NC4xNTA6NDQz#JP, Tokyo 2
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVAMTMuMTI1LjIxLjYxOjQ0Mw==#SG, Singapore
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVAMzUuOTMuMjEuMTg5OjQ0Mw==#CA, Vancouver
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVAMy4zNi43Mi44Njo0NDM=#HK, Kowloon
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVAMTguMTQxLjEzOS4yMzo0NDM=#KR, Incheon
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVAMy4zNi4yNi4xNDg6NDQz#JP, Tokyo
+ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDVANTQuMTg1LjI1My4yMTk6NDQz#US, Houston
