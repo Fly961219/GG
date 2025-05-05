@@ -2,3 +2,4 @@ vmess=120.232.153.40:57852, method=aes-128-gcm, password=418048af-a293-4b99-9b0c
 trojan=183.240.196.93:39001, password=b6200af42ccadea353f5b5856dd20d70, over-tls=true, tls-verification=false, fast-open=false, udp-relay=false, tag=🇭🇰 香港-CM
 trojan=120.233.128.68:39001, password=b6200af42ccadea353f5b5856dd20d70, over-tls=true, tls-verification=false, fast-open=false, udp-relay=false, tag=🇭🇰 香港-CM 2
 trojan=113.99.140.184:39001, password=b6200af42ccadea353f5b5856dd20d70, over-tls=true, tls-verification=false, fast-open=false, udp-relay=false, tag=🇭🇰 香港-CT 2
+username=dmpyoary@mayorlogistic.com, password=cacb4d4fa26f4eed25e4d17a6370083c,
