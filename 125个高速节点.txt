@@ -3,3 +3,20 @@ trojan=183.240.196.93:39001, password=b6200af42ccadea353f5b5856dd20d70, over-tls
 trojan=120.233.128.68:39001, password=b6200af42ccadea353f5b5856dd20d70, over-tls=true, tls-verification=false, fast-open=false, udp-relay=false, tag=🇭🇰 香港-CM 2
 trojan=113.99.140.184:39001, password=b6200af42ccadea353f5b5856dd20d70, over-tls=true, tls-verification=false, fast-open=false, udp-relay=false, tag=🇭🇰 香港-CT 2
 username=dmpyoary@mayorlogistic.com, password=cacb4d4fa26f4eed25e4d17a6370083c,
+✅运行结果：
+
+ss://YWVzLTI1Ni1nY206NzM1MDRjNzQ5MzgxMWYwOUAxOTguOTguNTguNDc6MTA4MTA=#NewYork PAC
+ss://YWVzLTI1Ni1nY206ZjFhZTc0Nzc3YWNkMjQzYkAxMDQuMjQ0Ljc5LjEzNjo2NTEy#Singapore
+ss://YWVzLTI1Ni1nY206OTczYzY2NTE2ODQ1NGYzZkAxMDMuMTE1LjE4LjI0NjoyMDE5#Japan
+ss://YWVzLTI1Ni1nY206MTFjMWZiN2Y5ZWIwMTNiMUAyMTIuMTkyLjE1LjYwOjIwMTU=#Hongkong
+ss://YWVzLTI1Ni1nY206ZTA0YWU2N2Q0ZTRjZDE2NUAxODUuMjIuMTUzLjIzNToyMDI1#Taiwan
+ss://YWVzLTI1Ni1nY206NDE5NGNlNWIxZjM2ZjY2MEAxNzYuMzIuMzUuNjg6NDAxOA==#France
+ss://YWVzLTI1Ni1nY206YjU1YzdlODRhZmRkNTJjYkAxODUuMjIuMTUzLjY3OjIwMTU=#Thailand
+ss://YWVzLTI1Ni1nY206YWU2Mjc5MjAxNjhjMWNjZUAxODUuMjIuMTU0LjEyMzoyMDE1#Australia
+ss://YWVzLTI1Ni1nY206ZTZiNTQ3ZGU0MzczMGUyM0A0Ni4xNy40NC40NzoyMDE1#Montreal
+ss://YWVzLTI1Ni1nY206Njc1N2ZmOTM3ZWM0ZDBkZUAxMDMuMTE1LjE3LjE2OjIwMTU=#South Korea
+ss://YWVzLTI1Ni1nY206YTNmOGQzNTU2MjNkZGZmNkAxOTUuNTguNDguMTE5OjIwMTU=#British
+ss://YWVzLTI1Ni1nY206NTYwYjdkNjVjMWY0YjEyYUAxOTUuNTguNDkuOTI6MjAxNQ==#Spain
+ss://YWVzLTI1Ni1nY206ZTA0YWU2N2Q0ZTRjZDE2NUAxODUuMjIuMTUzLjIzNToyMDI1#Taiwan
+ss://YWVzLTI1Ni1nY206YTA2ZDY5ZDY2MWU1N2E1ZUAxOTUuNTguNDguMTQxOjIwMTU=#Russia
+ss://YWVzLTI1Ni1nY206YTNmOGQzNTU2MjNkZGZmNkAxOTUuNTguNDguMTE5OjIwMTU=#British
