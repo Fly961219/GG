@@ -1,7 +1,5 @@
-// 13听书网 Forward / Rex source
+// 13听书网 Forward / Rex source (容错增强版)
 // Site: https://m.ting13.cc/
-// 注意：以下 HTML 选择器与音频解析逻辑基于通用听书站结构编写，
-// 导入后建议结合 https://m.ting13.cc 实际页面与播放接口做针对性微调。
 
 var T13_SITE = "https://m.ting13.cc";
 var T13_USER_AGENT =
@@ -9,7 +7,6 @@ var T13_USER_AGENT =
   "AppleWebKit/605.1.15 (KHTML, like Gecko) " +
   "Version/17.0 Mobile/15E148 Safari/604.1";
 var T13_TIMEOUT = 20000;
-var T13_PAGE_SIZE = 200;
 var T13_MIN_CHAPTERS = 10;
 var T13_DEFAULT_CHAPTERS = 3000;
 var T13_MAX_CHAPTERS = 3000;
@@ -27,7 +24,7 @@ var WidgetMetadata = {
   author: "Walkman",
   site: T13_SITE + "/",
   iconurl: T13_SITE + "/favicon.ico",
-  version: "1.0.0",
+  version: "1.0.1",
   requiredVersion: "0.0.1",
   detailCacheDuration: 300,
   modules: [
@@ -264,11 +261,50 @@ async function t13GetText(url, referer) {
 }
 
 function t13NormalizeBookId(rawHref) {
-  var cleaned = t13Text(rawHref)
+  return t13Text(rawHref)
     .replace(/^https?:\/\/[^/]+/i, "")
     .replace(/[?#].*$/, "")
     .replace(/^\/+|\/+$/g, "");
-  return cleaned;
+}
+
+function t13BuildItem(detailURL, title, poster, author, intro, category) {
+  var bookKey = t13NormalizeBookId(detailURL);
+  var cleanTitle = t13StripTags(title);
+  if (!detailURL || !bookKey || !cleanTitle || cleanTitle.length < 2) return null;
+  if (/^(?:首页|分类|排行|搜索|登录|注册|更多|下一章|上一章|听书|有声)$/i.test(cleanTitle)) {
+    return null;
+  }
+  var cleanPoster = t13Absolute(poster);
+  var backdrop = t13Image(cleanPoster);
+  var cleanAuthor = t13StripTags(author);
+  var cleanIntro = t13StripTags(intro);
+  return {
+    id: "ting13:" + bookKey,
+    type: "url",
+    title: cleanTitle,
+    originalTitle: cleanTitle,
+    description:
+      cleanIntro ||
+      [category, cleanAuthor ? "主播/作者：" + cleanAuthor : ""]
+        .filter(Boolean)
+        .join(" · "),
+    posterPath: cleanPoster,
+    detailPoster: cleanPoster,
+    backdropPath: backdrop,
+    backdropPaths: backdrop ? [backdrop] : [],
+    coverUrl: backdrop || cleanPoster,
+    rating: 0,
+    mediaType: "tv",
+    genreTitle: t13Text(category),
+    year: "",
+    country: "",
+    language: "国语",
+    link: detailURL,
+    externalUrl: detailURL,
+    source: "13听书网",
+    t13BookKey: bookKey,
+    t13Author: cleanAuthor
+  };
 }
 
 function t13ParseCards(html, category) {
@@ -276,70 +312,81 @@ function t13ParseCards(html, category) {
   var items = [];
   var seen = {};
 
-  // 优先按常见列表项容器切分；若结构不同则退化为按书籍详情链接提取
   var chunks = source.split(
     /<(?:li|div)\b[^>]*class="[^"]*(?:book[-_]?item|list[-_]?item|item|card|row)[^"]*"[^>]*>/i
   );
 
-  if (chunks.length > 1) {
-    for (var i = 1; i < chunks.length; i += 1) {
-      var block = chunks[i];
-      var linkMatch = block.match(
-        /href="([^"]*(?:\/book\/|\/yousheng\/|\/ting\/|\/show\/|\/detail\/)[^"]*)"/i
-      );
-      if (!linkMatch) continue;
-      var detailURL = t13Absolute(linkMatch[1]);
-      var bookKey = t13NormalizeBookId(linkMatch[1]);
-      if (!bookKey || seen[bookKey]) continue;
+  for (var i = 1; i < chunks.length; i += 1) {
+    var block = chunks[i];
+    var linkMatch = block.match(
+      /href="([^"]*(?:\/book\/|\/yousheng\/|\/ting\/|\/show\/|\/detail\/|\/\d+\/?)[^"]*)"/i
+    );
+    if (!linkMatch) continue;
+    var detailURL = t13Absolute(linkMatch[1]);
+    var bookKey = t13NormalizeBookId(detailURL);
+    if (!bookKey || seen[bookKey]) continue;
 
-      var title =
-        t13StripTags(
-          t13FirstMatch(block, /<a\b[^>]*href="[^"]*"[^>]*>([\s\S]*?)<\/a>/i)
-        ) || t13DecodeEntities(t13Attr(linkMatch[0], "title"));
-      if (!title || title.length < 1) continue;
+    var title =
+      t13StripTags(
+        t13FirstMatch(block, /<a\b[^>]*href="[^"]*"[^>]*>([\s\S]*?)<\/a>/i)
+      ) || t13DecodeEntities(t13Attr(linkMatch[0], "title"));
+    var imgTag = t13FirstMatch(block, /(<img\b[^>]*>)/i);
+    var poster =
+      t13Attr(imgTag, "data-original") ||
+      t13Attr(imgTag, "data-src") ||
+      t13Attr(imgTag, "src");
+    var author = t13FirstMatch(block, /(?:作者|播音|主播)[：:\s]*([^<\n/]+)/i);
+    var intro = t13FirstMatch(
+      block,
+      /<(?:p|div)\b[^>]*class="[^"]*(?:intro|desc|summary|info)[^"]*"[^>]*>([\s\S]*?)<\/(?:p|div)>/i
+    );
 
+    var item = t13BuildItem(detailURL, title, poster, author, intro, category);
+    if (item) {
       seen[bookKey] = true;
-      var imgTag = t13FirstMatch(block, /(<img\b[^>]*>)/i);
-      var poster = t13Absolute(
-        t13Attr(imgTag, "data-original") ||
-          t13Attr(imgTag, "data-src") ||
-          t13Attr(imgTag, "src")
-      );
-      var author = t13StripTags(
-        t13FirstMatch(block, /(?:作者|播音|主播)[：:\s]*([^<\n/]+)/i)
-      );
-      var intro = t13StripTags(
-        t13FirstMatch(block, /<(?:p|div)\b[^>]*class="[^"]*(?:intro|desc|summary|info)[^"]*"[^>]*>([\s\S]*?)<\/(?:p|div)>/i)
-      );
-      var backdrop = t13Image(poster);
+      items.push(item);
+    }
+  }
 
-      items.push({
-        id: "ting13:" + bookKey,
-        type: "url",
-        title: title,
-        originalTitle: title,
-        description:
-          intro ||
-          [category, author ? "主播/作者：" + author : ""]
-            .filter(Boolean)
-            .join(" · "),
-        posterPath: poster,
-        detailPoster: poster,
-        backdropPath: backdrop,
-        backdropPaths: backdrop ? [backdrop] : [],
-        coverUrl: backdrop || poster,
-        rating: 0,
-        mediaType: "tv",
-        genreTitle: t13Text(category),
-        year: "",
-        country: "",
-        language: "国语",
-        link: detailURL,
-        externalUrl: detailURL,
-        source: "13听书网",
-        t13BookKey: bookKey,
-        t13Author: author
-      });
+  // 兜底逻辑：当列表容器类名不匹配时，直接提取页面中的书籍链接
+  if (!items.length) {
+    var aRegex = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+    var match;
+    while ((match = aRegex.exec(source))) {
+      var attrs = match[1] || "";
+      var href = t13Attr("<a " + attrs + ">", "href");
+      if (!href || /^javascript:/i.test(href) || href === "#") continue;
+      if (
+        /(?:lastupdate|votenum|allvisit|tags\.html|search|paihang|zhuanti|app\/|\/book\/?$|\/yousheng\/?$)/i.test(
+          href
+        )
+      ) {
+        continue;
+      }
+      if (!/(?:\/book\/|\/yousheng\/|\/ting\/|\/show\/|\/detail\/|\/\d+(?:\/|\.html?)$)/i.test(href)) {
+        continue;
+      }
+      var absURL = t13Absolute(href);
+      var key = t13NormalizeBookId(absURL);
+      if (!key || seen[key]) continue;
+
+      var inner = match[2] || "";
+      var imgInA = t13FirstMatch(inner, /(<img\b[^>]*>)/i);
+      var posterFallback = imgInA
+        ? t13Attr(imgInA, "data-original") ||
+          t13Attr(imgInA, "data-src") ||
+          t13Attr(imgInA, "src")
+        : "";
+      var titleFallback =
+        t13StripTags(inner) ||
+        t13DecodeEntities(t13Attr("<a " + attrs + ">", "title")) ||
+        t13Attr(imgInA, "alt");
+
+      var built = t13BuildItem(absURL, titleFallback, posterFallback, "", "", category);
+      if (built) {
+        seen[key] = true;
+        items.push(built);
+      }
     }
   }
 
@@ -356,14 +403,12 @@ function t13ParseEpisodes(html, detailURL) {
   while ((match = linkRegex.exec(source))) {
     var href = t13Text(match[1]);
     var label = t13StripTags(match[2]) || t13DecodeEntities(t13Attr(match[0], "title"));
-    // 过滤明显非章节的导航/分页/标签链接
     if (!href || /^javascript:/i.test(href) || href === "#") continue;
     if (/^(?:首页|上一页|下一页|尾页|返回|分类|排行|搜索|登录|注册)$/i.test(label)) {
       continue;
     }
     var absUrl = t13Absolute(href);
     if (absUrl === detailURL || seenUrl[absUrl]) continue;
-    // 常见章节链接特征（数字/集/章/play/ting/read）
     if (/(?:第?\s*\d+\s*[集章回期]|play|ting|chapter|ep|\d+\.html?)/i.test(label + " " + href)) {
       seenUrl[absUrl] = true;
       episodes.push({
@@ -456,7 +501,6 @@ async function searchTing13(params) {
   );
   if (!keyword) return [];
   var page = t13Page(params.page);
-  // 若实际搜索路径不同，可替换为 13听书网站内搜索表单 action
   var url =
     T13_SITE +
     "/search.html?searchkey=" +
@@ -554,7 +598,6 @@ async function loadResource(params) {
   }
   if (!raw) throw new Error("无法定位 13听书网播放章节");
 
-  // 如果已经是可直接播放的音频链接
   if (/^https?:\/\/[^\s]+\.(?:mp3|m4a|aac|wav)(?:\?|$)/i.test(raw)) {
     return [
       {
@@ -569,7 +612,6 @@ async function loadResource(params) {
   var pageURL = t13Absolute(raw);
   var html = await t13GetText(pageURL, T13_SITE + "/");
 
-  // 尝试从播放页 HTML 或内联脚本中提取音频直链
   var audioMatch =
     html.match(/(https?:\/\/[^\s"'<>]+\.(?:mp3|m4a|aac)(?:\?[^\s"'<>]*)?)/i) ||
     html.match(/["'](https?:\/\/[^"']*(?:audio|mp3|m4a|stream|play)[^"']*)["']/i);
