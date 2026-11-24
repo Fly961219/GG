@@ -1,6 +1,6 @@
 // 13听书网 Forward / Rex source
 // Site: https://m.ting13.cc/
-// 严格对齐悦听吧 Rex 模块结构[span_5](start_span)[span_5](end_span)
+// 严格对齐悦听吧 Rex 模块结构[span_3](start_span)[span_3](end_span)
 
 var T13_SITE = "https://m.ting13.cc";
 var T13_USER_AGENT =
@@ -24,7 +24,7 @@ var WidgetMetadata = {
   author: "Walkman",
   site: T13_SITE + "/",
   iconurl: T13_SITE + "/favicon.ico",
-  version: "1.0.2",
+  version: "1.0.3",
   requiredVersion: "0.0.1",
   detailCacheDuration: 300,
   modules: [
@@ -113,9 +113,9 @@ var WidgetMetadata = {
         type: "input",
         value: "",
         placeholders: [
+          { title: "鬼吹灯", value: "鬼吹灯" },
           { title: "凡人修仙传", value: "凡人修仙传" },
-          { title: "盗墓笔记", value: "盗墓笔记" },
-          { title: "紫襟", value: "紫襟" }
+          { title: "盗墓笔记", value: "盗墓笔记" }
         ]
       },
       { name: "page", title: "页码", type: "page" }
@@ -140,6 +140,9 @@ function t13DecodeEntities(value) {
     })
     .replace(/&#(\d+);/g, function (_, number) {
       return String.fromCharCode(parseInt(number, 10));
+    })
+    .replace(/\\u([0-9a-f]{4})/gi, function (_, hex) {
+      return String.fromCharCode(parseInt(hex, 16));
     })
     .replace(/&nbsp;/gi, " ")
     .replace(/&ensp;/gi, " ")
@@ -241,6 +244,22 @@ async function t13Request(url, referer, extraHeaders) {
 
 async function t13GetText(url, referer) {
   var data = await t13Request(url, referer);
+  return typeof data === "string" ? data : JSON.stringify(data || "");
+}
+
+async function t13PostText(url, body, referer) {
+  if (typeof Widget.http.post !== "function") {
+    return "";
+  }
+  var headers = t13Headers(referer);
+  headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+  var response = await Widget.http.post(url, body, {
+    headers: headers,
+    timeout: T13_TIMEOUT
+  });
+  var status = t13ResponseStatus(response);
+  if (status < 200 || status >= 300) return "";
+  var data = response && response.data !== undefined ? response.data : response;
   return typeof data === "string" ? data : JSON.stringify(data || "");
 }
 
@@ -364,7 +383,6 @@ function t13ParsePlayURLs(html, bookId, detailURL) {
 
     var absURL = t13Absolute(href);
     if (!absURL || absURL === detailURL) continue;
-    // 排除站内导航、分类、排行、搜索、书籍主页本身
     if (
       /\/youshengxiaoshuo\/\d+\/?$/i.test(absURL) ||
       /\/(?:lastupdate|allvisit|search|paihang|tags\.html|index\.html)/i.test(absURL)
@@ -383,10 +401,8 @@ function t13ParsePlayURLs(html, bookId, detailURL) {
       (bookId && absURL.indexOf("/" + bookId + "/") !== -1) ||
       (bookId && absURL.indexOf("/" + bookId + "-") !== -1) ||
       /\/(?:play|ting|audio|chapter)\//i.test(absURL);
-    var looksLikeChapterTitle =
-      /(?:第?\s*\d+\s*[集章回期话节]|序章|楔子|番外|上集|下集|^\d{1,4}$)/i.test(title);
 
-    if (!matchesBookPath && !looksLikeChapterTitle) continue;
+    if (!matchesBookPath) continue;
 
     if (!byId[absURL]) {
       byId[absURL] = {
@@ -496,29 +512,93 @@ async function searchT13(params) {
   );
   if (!keyword) return [];
   var page = t13Page(params.page);
-  var url =
-    T13_SITE +
-    "/search.html?searchkey=" +
-    encodeURIComponent(keyword) +
-    "&page=" +
-    page;
-  var html = await t13GetText(url, T13_SITE + "/");
-  return t13ParseCards(html, "");
+  var encoded = encodeURIComponent(keyword);
+
+  // 依次尝试常见 GET 搜索地址
+  var getCandidates = [
+    T13_SITE + "/search.html?searchkey=" + encoded + "&page=" + page,
+    T13_SITE + "/search/?searchkey=" + encoded + "&page=" + page,
+    T13_SITE + "/search.html?keyword=" + encoded + "&page=" + page,
+    T13_SITE + "/search.php?searchword=" + encoded + "&page=" + page
+  ];
+
+  for (var i = 0; i < getCandidates.length; i += 1) {
+    try {
+      var html = await t13GetText(getCandidates[i], T13_SITE + "/");
+      var items = t13ParseCards(html, "搜索");
+      if (items.length) return items;
+    } catch (e) {
+      // 继续尝试下一个搜索接口
+    }
+  }
+
+  // 回退尝试 POST 搜索表单
+  var postCandidates = [
+    { url: T13_SITE + "/search.html", body: "searchkey=" + encoded + "&page=" + page },
+    { url: T13_SITE + "/search.php", body: "searchword=" + encoded + "&page=" + page }
+  ];
+  for (var j = 0; j < postCandidates.length; j += 1) {
+    try {
+      var postHtml = await t13PostText(
+        postCandidates[j].url,
+        postCandidates[j].body,
+        T13_SITE + "/"
+      );
+      var postItems = t13ParseCards(postHtml, "搜索");
+      if (postItems.length) return postItems;
+    } catch (e) {
+      // 忽略继续
+    }
+  }
+
+  return [];
 }
 
-function t13ExtractAudioFromHtml(html) {
-  var source = t13Text(html);
-  if (!source) return "";
+function t13ExtractAudioFromText(source) {
+  var text = t13DecodeEntities(t13Text(source)).replace(/\\\//g, "/");
+  if (!text) return "";
 
-  var directMatch =
-    source.match(/(https?:\/\/[^\s"'<>\\]+\.(?:mp3|m4a|aac|ogg)(?:\?[^\s"'<>\\]*)?)/i) ||
-    source.match(/<source\b[^>]*src=["']([^"']+)["']/i) ||
-    source.match(/<audio\b[^>]*src=["']([^"']+)["']/i) ||
-    source.match(/(?:url|mp3|audio|src|playUrl|file)\s*[:=]\s*["'](https?:\/\/[^"']+)["']/i);
+  var patterns = [
+    /(https?:\/\/[^\s"'<>\\]+\.(?:mp3|m4a|aac|ogg)(?:\?[^\s"'<>\\]*)?)/i,
+    /<source\b[^>]*src=["']([^"']+)["']/i,
+    /<audio\b[^>]*src=["']([^"']+)["']/i,
+    /(?:playurl|play_url|mp3url|audioUrl|audiourl|mp3|url|file|src)\s*[:=]\s*["'](https?:\/\/[^"']+)["']/i,
+    /["'](\/[^"']+\.(?:mp3|m4a|aac)(?:\?[^"']*)?)["']/i
+  ];
 
-  if (directMatch && directMatch[1]) {
-    return t13DecodeEntities(directMatch[1].replace(/\\\//g, "/"));
+  for (var i = 0; i < patterns.length; i += 1) {
+    var m = text.match(patterns[i]);
+    if (m && m[1]) {
+      return t13Absolute(m[1]);
+    }
   }
+  return "";
+}
+
+async function t13ResolveAudioFromPlayPage(pageURL) {
+  var html = await t13GetText(pageURL, T13_SITE + "/");
+  var direct = t13ExtractAudioFromText(html);
+  if (direct) return direct;
+
+  // 若播放页通过外链 JS 数据文件加载播放列表（常见于听书站 playdata / js）
+  var scriptRegex = /<script\b[^>]*src=["']([^"']+)["']/gi;
+  var match;
+  var checked = 0;
+  while ((match = scriptRegex.exec(html)) && checked < 5) {
+    var scriptSrc = t13Text(match[1]);
+    if (!scriptSrc || /(?:jquery|swiper|lazyload|hm\.baidu|cnzz|tongji)/i.test(scriptSrc)) {
+      continue;
+    }
+    checked += 1;
+    try {
+      var scriptText = await t13GetText(t13Absolute(scriptSrc), pageURL);
+      var fromScript = t13ExtractAudioFromText(scriptText);
+      if (fromScript) return fromScript;
+    } catch (e) {
+      // 继续检查下一个脚本
+    }
+  }
+
   return "";
 }
 
@@ -560,10 +640,9 @@ async function loadDetail(source) {
   var firstAudioUrl = "";
   if (episodes.length) {
     try {
-      var firstHtml = await t13GetText(episodes[0].link, detailURL);
-      firstAudioUrl = t13ExtractAudioFromHtml(firstHtml);
+      firstAudioUrl = await t13ResolveAudioFromPlayPage(episodes[0].link);
     } catch (e) {
-      // 忽略首集预取失败，仍保留分集列表
+      // 预取失败不影响分集队列展示
     }
   }
 
@@ -642,17 +721,17 @@ async function loadResource(params) {
         name: t13Text(params.title || params.name) || "13听书网音频",
         description: "来源：13听书网\n详情页直链",
         url: raw,
+        headers: t13Headers(T13_SITE + "/"),
         playerType: "app"
       }
     ];
   }
 
   var pageURL = t13Absolute(raw);
-  var html = await t13GetText(pageURL, T13_SITE + "/");
-  var audioURL = t13ExtractAudioFromHtml(html);
+  var audioURL = await t13ResolveAudioFromPlayPage(pageURL);
 
   if (!audioURL) {
-    throw new Error("13听书网播放页未解析到有效音频地址");
+    throw new Error("13听书网播放页未解析到有效音频地址: " + pageURL);
   }
 
   return [
@@ -660,6 +739,7 @@ async function loadResource(params) {
       name: t13Text(params.title || params.name) || "13听书网音频",
       description: "来源：13听书网",
       url: audioURL,
+      headers: t13Headers(pageURL),
       playerType: "app",
       source: "13听书网"
     }
