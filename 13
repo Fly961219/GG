@@ -1,6 +1,6 @@
 // 13听书网 Forward / Rex source
 // Site: https://m.ting13.cc/
-// 严格对齐悦听吧 Rex 模块结构[span_3](start_span)[span_3](end_span)
+// 严格对齐悦听吧 Rex 模块结构[span_1](start_span)[span_1](end_span)
 
 var T13_SITE = "https://m.ting13.cc";
 var T13_USER_AGENT =
@@ -8,6 +8,7 @@ var T13_USER_AGENT =
   "AppleWebKit/537.36 (KHTML, like Gecko) " +
   "Chrome/142.0.0.0 Safari/537.36";
 var T13_TIMEOUT = 20000;
+var T13_PAGE_SIZE = 200;
 var T13_MIN_CHAPTERS = 10;
 var T13_DEFAULT_CHAPTERS = 3000;
 var T13_MAX_CHAPTERS = 3000;
@@ -24,7 +25,7 @@ var WidgetMetadata = {
   author: "Walkman",
   site: T13_SITE + "/",
   iconurl: T13_SITE + "/favicon.ico",
-  version: "1.0.3",
+  version: "1.0.4",
   requiredVersion: "0.0.1",
   detailCacheDuration: 300,
   modules: [
@@ -383,26 +384,25 @@ function t13ParsePlayURLs(html, bookId, detailURL) {
 
     var absURL = t13Absolute(href);
     if (!absURL || absURL === detailURL) continue;
-    if (
-      /\/youshengxiaoshuo\/\d+\/?$/i.test(absURL) ||
-      /\/(?:lastupdate|allvisit|search|paihang|tags\.html|index\.html)/i.test(absURL)
-    ) {
-      continue;
-    }
+
+    // 严格锁定当前书目下的播放链接，如 /play/28752_1_172476.html 或 /youshengxiaoshuo/28752/1.html
+    var belongsToBook =
+      (bookId && new RegExp("\\/play\\/" + bookId + "_\\d+_\\d+\\.html", "i").test(absURL)) ||
+      (bookId && new RegExp("\\/youshengxiaoshuo\\/" + bookId + "\\/[^/]+", "i").test(absURL));
+
+    if (!belongsToBook) continue;
 
     var title =
       t13StripTags(match[2]) ||
       t13DecodeEntities(t13Attr("<a " + attrs + ">", "title"));
-    if (!title || /^(?:首页|上一页|下一页|尾页|返回|目录|倒序|正序|开始收听|立即播放)$/i.test(title)) {
+    if (
+      !title ||
+      /^(?:首页|上一页|下一页|尾页|返回|目录|倒序|正序|开始收听|立即播放|上一集|下一集)$/i.test(
+        title
+      )
+    ) {
       continue;
     }
-
-    var matchesBookPath =
-      (bookId && absURL.indexOf("/" + bookId + "/") !== -1) ||
-      (bookId && absURL.indexOf("/" + bookId + "-") !== -1) ||
-      /\/(?:play|ting|audio|chapter)\//i.test(absURL);
-
-    if (!matchesBookPath) continue;
 
     if (!byId[absURL]) {
       byId[absURL] = {
@@ -434,6 +434,8 @@ function t13ParsePlayURLs(html, bookId, detailURL) {
 
 function t13BookIdFromValue(value) {
   var raw = t13Text(value);
+  var play = raw.match(/\/play\/(\d+)_\d+_\d+\.html/i);
+  if (play) return play[1];
   var detail = raw.match(/\/youshengxiaoshuo\/(\d+)/i);
   if (detail) return detail[1];
   var own = raw.match(/^ting13:book:(\d+)$/i);
@@ -514,12 +516,12 @@ async function searchT13(params) {
   var page = t13Page(params.page);
   var encoded = encodeURIComponent(keyword);
 
-  // 依次尝试常见 GET 搜索地址
   var getCandidates = [
     T13_SITE + "/search.html?searchkey=" + encoded + "&page=" + page,
     T13_SITE + "/search/?searchkey=" + encoded + "&page=" + page,
     T13_SITE + "/search.html?keyword=" + encoded + "&page=" + page,
-    T13_SITE + "/search.php?searchword=" + encoded + "&page=" + page
+    T13_SITE + "/search.php?searchword=" + encoded + "&page=" + page,
+    T13_SITE + "/e/search/index.php"
   ];
 
   for (var i = 0; i < getCandidates.length; i += 1) {
@@ -528,14 +530,14 @@ async function searchT13(params) {
       var items = t13ParseCards(html, "搜索");
       if (items.length) return items;
     } catch (e) {
-      // 继续尝试下一个搜索接口
+      // 继续尝试下一个搜索地址
     }
   }
 
-  // 回退尝试 POST 搜索表单
   var postCandidates = [
     { url: T13_SITE + "/search.html", body: "searchkey=" + encoded + "&page=" + page },
-    { url: T13_SITE + "/search.php", body: "searchword=" + encoded + "&page=" + page }
+    { url: T13_SITE + "/search.php", body: "searchword=" + encoded + "&page=" + page },
+    { url: T13_SITE + "/e/search/index.php", body: "keyboard=" + encoded + "&show=title&tempid=1" }
   ];
   for (var j = 0; j < postCandidates.length; j += 1) {
     try {
@@ -580,13 +582,25 @@ async function t13ResolveAudioFromPlayPage(pageURL) {
   var direct = t13ExtractAudioFromText(html);
   if (direct) return direct;
 
-  // 若播放页通过外链 JS 数据文件加载播放列表（常见于听书站 playdata / js）
+  // 若页面内含异步播放接口路径（如 /api/... 或 /playdata/... 或 /ajax/...）
+  var apiMatch = html.match(/["'](\/[^"']*(?:play|audio|mp3|api|ajax|data)[^"']*\.(?:php|json|ashx|do)[^"']*)["']/i);
+  if (apiMatch && apiMatch[1]) {
+    try {
+      var apiRes = await t13GetText(t13Absolute(apiMatch[1]), pageURL);
+      var fromApi = t13ExtractAudioFromText(apiRes);
+      if (fromApi) return fromApi;
+    } catch (e) {
+      // 忽略异步接口失败
+    }
+  }
+
+  // 检查非公共库外链脚本
   var scriptRegex = /<script\b[^>]*src=["']([^"']+)["']/gi;
   var match;
   var checked = 0;
-  while ((match = scriptRegex.exec(html)) && checked < 5) {
+  while ((match = scriptRegex.exec(html)) && checked < 6) {
     var scriptSrc = t13Text(match[1]);
-    if (!scriptSrc || /(?:jquery|swiper|lazyload|hm\.baidu|cnzz|tongji)/i.test(scriptSrc)) {
+    if (!scriptSrc || /(?:jquery|swiper|lazyload|hm\.baidu|cnzz|tongji|bootstrap)/i.test(scriptSrc)) {
       continue;
     }
     checked += 1;
