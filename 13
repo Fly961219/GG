@@ -1,6 +1,5 @@
 // 13听书网 Forward / Rex source
 // Site: https://m.ting13.cc/
-// 严格对齐悦听吧 Rex 模块结构[span_2](start_span)[span_2](end_span)
 
 var T13_SITE = "https://m.ting13.cc";
 var T13_USER_AGENT =
@@ -8,7 +7,6 @@ var T13_USER_AGENT =
   "AppleWebKit/537.36 (KHTML, like Gecko) " +
   "Chrome/142.0.0.0 Safari/537.36";
 var T13_TIMEOUT = 20000;
-var T13_PAGE_SIZE = 200;
 var T13_MIN_CHAPTERS = 10;
 var T13_DEFAULT_CHAPTERS = 3000;
 var T13_MAX_CHAPTERS = 3000;
@@ -25,7 +23,7 @@ var WidgetMetadata = {
   author: "Walkman",
   site: T13_SITE + "/",
   iconurl: T13_SITE + "/favicon.ico",
-  version: "1.0.5",
+  version: "1.0.6",
   requiredVersion: "0.0.1",
   detailCacheDuration: 300,
   modules: [
@@ -141,9 +139,6 @@ function t13DecodeEntities(value) {
     })
     .replace(/&#(\d+);/g, function (_, number) {
       return String.fromCharCode(parseInt(number, 10));
-    })
-    .replace(/\\u([0-9a-f]{4})/gi, function (_, hex) {
-      return String.fromCharCode(parseInt(hex, 16));
     })
     .replace(/&nbsp;/gi, " ")
     .replace(/&ensp;/gi, " ")
@@ -354,20 +349,14 @@ function t13ParseCards(html, category) {
   });
 }
 
-function t13ExtractEpisodeNum(title, url) {
-  var m =
-    t13Text(title).match(/\b0*(\d{1,5})\b/) ||
-    t13Text(title).match(/第\s*0*(\d{1,5})\s*[集章回期话节]/) ||
-    t13Text(url).match(/_\d+_(\d+)\.html/i);
-  return m ? parseInt(m[1], 10) : null;
-}
-
 function t13ParsePlayURLs(html, bookId, detailURL) {
   var source = t13Text(html);
   var episodes = [];
   var byId = {};
   var aRegex = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
   var match;
+  var bookPrefix = "/play/" + bookId + "_";
+  var detailPrefix = "/youshengxiaoshuo/" + bookId + "/";
 
   while ((match = aRegex.exec(source))) {
     var attrs = match[1] || "";
@@ -378,8 +367,8 @@ function t13ParsePlayURLs(html, bookId, detailURL) {
     if (!absURL || absURL === detailURL) continue;
 
     var belongsToBook =
-      (bookId && new RegExp("\\/play\\/" + bookId + "_\\d+_\\d+\\.html", "i").test(absURL)) ||
-      (bookId && new RegExp("\\/youshengxiaoshuo\\/" + bookId + "\\/[^/]+", "i").test(absURL));
+      (bookId && absURL.indexOf(bookPrefix) !== -1) ||
+      (bookId && absURL.indexOf(detailPrefix) !== -1 && absURL !== T13_SITE + detailPrefix);
 
     if (!belongsToBook) continue;
 
@@ -398,22 +387,11 @@ function t13ParsePlayURLs(html, bookId, detailURL) {
     if (!byId[absURL]) {
       byId[absURL] = {
         url: absURL,
-        title: title,
-        num: t13ExtractEpisodeNum(title, absURL)
+        title: title
       };
       episodes.push(byId[absURL]);
     } else if (title.length > t13Text(byId[absURL].title).length) {
       byId[absURL].title = title;
-      byId[absURL].num = t13ExtractEpisodeNum(title, absURL);
-    }
-  }
-
-  // 若列表呈现倒序（例如第一项集号大于最后一项集号），自动转为正序
-  if (episodes.length > 1) {
-    var firstNum = episodes[0].num;
-    var lastNum = episodes[episodes.length - 1].num;
-    if (firstNum !== null && lastNum !== null && firstNum > lastNum) {
-      episodes.reverse();
     }
   }
 
@@ -516,88 +494,23 @@ async function searchT13(params) {
   );
   if (!keyword) return [];
   var page = t13Page(params.page);
-  var encoded = encodeURIComponent(keyword);
-  var candidates = [
-    T13_SITE + "/search.html?searchkey=" + encoded + "&page=" + page,
-    T13_SITE + "/search/?searchkey=" + encoded + "&page=" + page,
-    T13_SITE + "/search.html?keyword=" + encoded + "&page=" + page,
-    T13_SITE + "/search.php?searchword=" + encoded + "&page=" + page
-  ];
-  for (var i = 0; i < candidates.length; i += 1) {
-    try {
-      var html = await t13GetText(candidates[i], T13_SITE + "/");
-      var items = t13ParseCards(html, "搜索");
-      if (items.length) return items;
-    } catch (e) {
-      // 继续尝试
-    }
-  }
-  return [];
+  var url =
+    T13_SITE +
+    "/search.html?searchkey=" +
+    encodeURIComponent(keyword) +
+    "&page=" +
+    page;
+  var html = await t13GetText(url, T13_SITE + "/");
+  return t13ParseCards(html, "");
 }
 
-function t13ExtractAudioFromText(source) {
-  var text = t13DecodeEntities(t13Text(source)).replace(/\\\//g, "/");
-  if (!text) return "";
-  var patterns = [
-    /(https?:\/\/[^\s"'<>\\]+\.(?:mp3|m4a|aac|ogg)(?:\?[^\s"'<>\\]*)?)/i,
-    /<source\b[^>]*src=["']([^"']+)["']/i,
-    /<audio\b[^>]*src=["']([^"']+)["']/i,
-    /(?:playurl|play_url|mp3url|audioUrl|audiourl|mp3|url|file|src)\s*[:=]\s*["'](https?:\/\/[^"']+)["']/i,
-    /["'](\/[^"']+\.(?:mp3|m4a|aac)(?:\?[^"']*)?)["']/i
-  ];
-  for (var i = 0; i < patterns.length; i += 1) {
-    var m = text.match(patterns[i]);
-    if (m && m[1]) {
-      return t13Absolute(m[1]);
-    }
-  }
-  return "";
-}
-
-function t13CollectScriptHints(html) {
-  var hints = [];
-  var scriptRegex = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
-  var match;
-  while ((match = scriptRegex.exec(t13Text(html)))) {
-    var src = t13Attr("<script " + (match[1] || "") + ">", "src");
-    var body = t13Text(match[2] || "");
-    if (src) {
-      hints.push("src=" + src);
-    } else if (body && !/(?:hm\.baidu|cnzz|tongji|google)/i.test(body)) {
-      hints.push("inline=" + body.replace(/\s+/g, " ").slice(0, 140));
-    }
-    if (hints.length >= 4) break;
-  }
-  return hints.join(" | ");
-}
-
-async function t13ResolveAudioFromPlayPage(pageURL) {
-  var html = await t13GetText(pageURL, T13_SITE + "/");
-  var direct = t13ExtractAudioFromText(html);
-  if (direct) return { audioUrl: direct, hints: "" };
-
-  var scriptRegex = /<script\b[^>]*src=["']([^"']+)["']/gi;
-  var match;
-  var checked = 0;
-  while ((match = scriptRegex.exec(html)) && checked < 6) {
-    var scriptSrc = t13Text(match[1]);
-    if (!scriptSrc || /(?:jquery|swiper|lazyload|hm\.baidu|cnzz|tongji|bootstrap)/i.test(scriptSrc)) {
-      continue;
-    }
-    checked += 1;
-    try {
-      var scriptText = await t13GetText(t13Absolute(scriptSrc), pageURL);
-      var fromScript = t13ExtractAudioFromText(scriptText);
-      if (fromScript) return { audioUrl: fromScript, hints: "" };
-    } catch (e) {
-      // 忽略
-    }
-  }
-
-  return {
-    audioUrl: "",
-    hints: t13CollectScriptHints(html)
-  };
+function t13ExtractAudioFromHtml(html) {
+  var source = t13DecodeEntities(t13Text(html)).replace(/\\\//g, "/");
+  if (!source) return "";
+  var match =
+    source.match(/(https?:\/\/[^\s"'<>]+\.(?:mp3|m4a|aac)(?:\?[^\s"'<>]*)?)/i) ||
+    source.match(/["'](\/[^"']+\.(?:mp3|m4a|aac)(?:\?[^"']*)?)["']/i);
+  return match && match[1] ? t13Absolute(match[1]) : "";
 }
 
 async function loadDetail(source) {
@@ -634,7 +547,6 @@ async function loadDetail(source) {
 
   var limit = t13Runtime.maxChapters || T13_DEFAULT_CHAPTERS;
   var episodes = t13ParsePlayURLs(html, bookId, detailURL).slice(0, limit);
-
   var publicEpisodes = episodes.map(function (episode, index) {
     return {
       id: episode.link,
@@ -704,33 +616,30 @@ async function loadResource(params) {
   }
   if (!raw) throw new Error("无法定位 13听书网播放章节");
 
-  if (/^https?:\/\/[^\s]+\.(?:mp3|m4a|aac|ogg)(?:\?|$)/i.test(raw)) {
+  if (/^https?:\/\/[^\s]+\.(?:mp3|m4a|aac)(?:\?|$)/i.test(raw)) {
     return [
       {
         name: t13Text(params.title || params.name) || "13听书网音频",
         description: "来源：13听书网\n详情页直链",
         url: raw,
-        headers: t13Headers(T13_SITE + "/"),
         playerType: "app"
       }
     ];
   }
 
   var pageURL = t13Absolute(raw);
-  var resolved = await t13ResolveAudioFromPlayPage(pageURL);
+  var html = await t13GetText(pageURL, T13_SITE + "/");
+  var audioURL = t13ExtractAudioFromHtml(html);
 
-  if (!resolved.audioUrl) {
-    throw new Error(
-      "未解析到音频直链 [" + pageURL + "] -> " + (resolved.hints || "无脚本线索")
-    );
+  if (!audioURL) {
+    throw new Error("13听书网播放页未解析到有效音频地址");
   }
 
   return [
     {
       name: t13Text(params.title || params.name) || "13听书网音频",
       description: "来源：13听书网",
-      url: resolved.audioUrl,
-      headers: t13Headers(pageURL),
+      url: audioURL,
       playerType: "app",
       source: "13听书网"
     }
